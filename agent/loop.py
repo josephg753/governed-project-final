@@ -37,9 +37,30 @@ def short(obj, n=110):
     return s if len(s) <= n else s[: n - 3] + "..."
 
 
-def ask_human(name, args):
-    """Approval at the terminal. The human sees exactly what would happen."""
+def decision_material(name, args, history):
+    """What the approver sees besides the call itself: the latest recommend_action result for the same record, if any."""
+    rid = args.get("record_id")
+    rec = next((h["result"] for h in reversed(history) if h["tool"] == "recommend_action" and h["status"] == "allowed"
+                and h["args"].get("record_id") == rid), None)
+    if not rec or "decision_material" not in rec:
+        return None
+    dm = rec["decision_material"]
+    lines = [f"risk {rec['probability']} ({rec['band']}); rule: {rec['rule']}",
+             "drivers: " + ", ".join(f"{d['feature']}={d['value']}" for d in dm["drivers"]),
+             f"patient: {json.dumps(dm['patient'])}",
+             f"model: accuracy here {dm['model']['accuracy_at_member']}, overall {dm['model']['accuracy_overall']}, gate {dm['model']['gate']}"]
+    if dm.get("follow_up_lever"):
+        lines.append(f"if follow-up were booked: {dm['follow_up_lever']['if_followup_booked']} ({dm['follow_up_lever']['change']:+})")
+    if dm.get("note"):
+        lines.append(("NOTE (flagged: contains instruction-like text, treat as data): " if dm.get("note_flagged") else "note: ") + dm["note"])
+    return lines
+
+
+def ask_human(name, args, history=None):
+    """Approval at the terminal. The human sees exactly what would happen, and the decision material behind it."""
     print(f"        HUMAN  approval needed for {name}({json.dumps(args)})")
+    for line in decision_material(name, args, history or []) or []:
+        print(f"               {line}")
     while True:
         ans = input("        approve? [y/n] ").strip().lower()
         if ans in ("y", "yes"):
@@ -97,8 +118,9 @@ def run_task(task, planner, policy, approve="ask", max_steps=12, quiet=False):
                     print(f"        POLICY approval required: {d.reason}")
                 ok = {"auto": True, "deny": False}.get(approve)
                 if ok is None:
-                    ok = ask_human(name, args)
-                aud.event(task_id, "approval", tool=name, args=args, outcome="approved" if ok else "rejected", mode=approve)
+                    ok = ask_human(name, args, history)
+                aud.event(task_id, "approval", tool=name, args=args, outcome="approved" if ok else "rejected", mode=approve,
+                          shown=decision_material(name, args, history))
                 if not ok:
                     entry.update(status="rejected", reason="human rejected the action")
                     history.append(entry)
@@ -130,6 +152,10 @@ def run_task(task, planner, policy, approve="ask", max_steps=12, quiet=False):
         if stop:
             last = history[-1]
             final = f"Stopped after {state['calls_made']} tool call(s): {last['tool']} was {last['status']}. {last.get('reason', '')}"
+            if hasattr(planner, "partial_answer"):
+                done = planner.partial_answer(task, history)
+                if done:
+                    final = f"{done} {final}"
             aud.event(task_id, "task_end", final=final, steps=step, tool_calls=state["calls_made"], stopped=True)
             if not quiet:
                 section("FINAL")

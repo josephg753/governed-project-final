@@ -30,6 +30,23 @@ def precheck(policy):
             problems.append(f"{t} is forbidden for any agent but appears in allowed_tools")
     if policy["max_tool_calls_per_task"] < 1:
         problems.append("max_tool_calls_per_task must be at least 1")
+    from . import tools as T
+    if T.TOOLS:   # the specialists are imported: every tool the policy names must exist in software
+        named = set(policy["allowed_tools"]) | set(policy.get("approval_required", [])) | set(policy.get("record_level_tools", []))
+        for t in sorted(named - set(T.TOOLS)):
+            problems.append(f"the policy names {t} but no such tool is registered")
+        for t in policy["allowed_tools"]:
+            if T.TOOLS.get(t, {}).get("kind") == "never":
+                problems.append(f"{t} is of kind 'never' in software but appears in allowed_tools")
+            if T.TOOLS.get(t, {}).get("kind") == "act" and t not in policy.get("approval_required", []):
+                problems.append(f"{t} changes the world (kind 'act') but is not on approval_required")
+    try:
+        charter = json.load(open(ROOT / policy["model"].get("charter_path", "governance/federation_policy.json")))
+        if policy["model"]["min_neutral_test_accuracy"] < charter["min_global_accuracy"]:
+            problems.append(f"agent model floor {policy['model']['min_neutral_test_accuracy']} is below the charter's global floor "
+                            f"{charter['min_global_accuracy']}: the agent would accept a model the federation would block")
+    except FileNotFoundError:
+        pass
     rl = set(policy["data_scope"]["record_level_members"])
     if not rl <= set(policy["data_scope"]["aggregate_members"]):
         problems.append("record_level_members must be a subset of aggregate_members")
@@ -65,6 +82,15 @@ def check(policy, name, args, state):
     for key in ("member_a", "member_b"):
         if key in args and args[key] not in scope["aggregate_members"]:
             return Decision("refuse", f"{args[key]} is outside aggregate scope {scope['aggregate_members']}")
+    listed = args.get("members")
+    if listed is not None:
+        if not isinstance(listed, list) or not listed:
+            return Decision("refuse", f"{name} needs a non-empty list of members")
+        outside = [m for m in listed if m not in scope["aggregate_members"]]
+        if outside:
+            return Decision("refuse", f"{outside} outside aggregate scope {scope['aggregate_members']}")
+        if name in policy.get("record_level_tools", []) and any(m not in scope["record_level_members"] for m in listed):
+            return Decision("refuse", f"{name} touches individual records; allowed only for {scope['record_level_members']}")
     if member is not None and member not in scope["aggregate_members"]:
         return Decision("refuse", f"{member} is outside aggregate scope {scope['aggregate_members']}")
     if name in policy.get("record_level_tools", []) and member not in scope["record_level_members"]:
