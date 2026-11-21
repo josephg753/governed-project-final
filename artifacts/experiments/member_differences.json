@@ -1,0 +1,343 @@
+{
+  "consortium": "hospitals",
+  "charter_version": "1.1",
+  "seed": 690,
+  "E1_profile": {
+    "Lakeshore General": {
+      "rows": 2600,
+      "base_rate": 0.364,
+      "eval_rows": 400,
+      "eval_base_rate": 0.35
+    },
+    "St. Brigid": {
+      "rows": 1400,
+      "base_rate": 0.409,
+      "eval_rows": 400,
+      "eval_base_rate": 0.407
+    },
+    "Riverbend": {
+      "rows": 900,
+      "base_rate": 0.48,
+      "eval_rows": 400,
+      "eval_base_rate": 0.487
+    },
+    "Pinecrest Rural": {
+      "rows": 90,
+      "base_rate": 0.289,
+      "eval_rows": 400,
+      "eval_base_rate": 0.343
+    },
+    "Harbor Children's and Adults": {
+      "rows": 700,
+      "base_rate": 0.39,
+      "eval_rows": 400,
+      "eval_base_rate": 0.398
+    }
+  },
+  "E2_lives_alone": {
+    "Lakeshore General": {
+      "rate_lives_alone": 0.443,
+      "rate_not_alone": 0.33,
+      "gap_alone_minus_not": 0.113,
+      "elderly_75plus_gap": 0.132,
+      "local_model_weight_lives_alone": 0.259
+    },
+    "St. Brigid": {
+      "rate_lives_alone": 0.498,
+      "rate_not_alone": 0.374,
+      "gap_alone_minus_not": 0.124,
+      "elderly_75plus_gap": 0.041,
+      "local_model_weight_lives_alone": 0.292
+    },
+    "Riverbend": {
+      "rate_lives_alone": 0.516,
+      "rate_not_alone": 0.466,
+      "gap_alone_minus_not": 0.05,
+      "elderly_75plus_gap": 0.077,
+      "local_model_weight_lives_alone": 0.074
+    },
+    "Pinecrest Rural": {
+      "rate_lives_alone": 0.526,
+      "rate_not_alone": 0.225,
+      "gap_alone_minus_not": 0.301,
+      "elderly_75plus_gap": 0.339,
+      "local_model_weight_lives_alone": 0.442
+    },
+    "Harbor Children's and Adults": {
+      "rate_lives_alone": 0.359,
+      "rate_not_alone": 0.404,
+      "gap_alone_minus_not": -0.044,
+      "elderly_75plus_gap": -0.056,
+      "local_model_weight_lives_alone": -0.195
+    }
+  },
+  "E3_strata": {
+    "strata": [
+      {
+        "age": "<65",
+        "comorbidity": "0-1",
+        "St. Brigid rate": 0.239,
+        "Lakeshore General rate": 0.238,
+        "gap": 0.001,
+        "rows_a": 205,
+        "rows_b": 303
+      },
+      {
+        "age": "<65",
+        "comorbidity": "2-3",
+        "St. Brigid rate": 0.392,
+        "Lakeshore General rate": 0.318,
+        "gap": 0.074,
+        "rows_a": 222,
+        "rows_b": 447
+      },
+      {
+        "age": "<65",
+        "comorbidity": "4+",
+        "St. Brigid rate": 0.528,
+        "Lakeshore General rate": 0.435,
+        "gap": 0.093,
+        "rows_a": 123,
+        "rows_b": 271
+      },
+      {
+        "age": "65-79",
+        "comorbidity": "0-1",
+        "St. Brigid rate": 0.318,
+        "Lakeshore General rate": 0.295,
+        "gap": 0.023,
+        "rows_a": 179,
+        "rows_b": 315
+      },
+      {
+        "age": "65-79",
+        "comorbidity": "2-3",
+        "St. Brigid rate": 0.434,
+        "Lakeshore General rate": 0.35,
+        "gap": 0.084,
+        "rows_a": 244,
+        "rows_b": 437
+      },
+      {
+        "age": "65-79",
+        "comorbidity": "4+",
+        "St. Brigid rate": 0.575,
+        "Lakeshore General rate": 0.489,
+        "gap": 0.086,
+        "rows_a": 160,
+        "rows_b": 305
+      },
+      {
+        "age": "80+",
+        "comorbidity": "0-1",
+        "St. Brigid rate": 0.299,
+        "Lakeshore General rate": 0.279,
+        "gap": 0.02,
+        "rows_a": 87,
+        "rows_b": 147
+      },
+      {
+        "age": "80+",
+        "comorbidity": "2-3",
+        "St. Brigid rate": 0.44,
+        "Lakeshore General rate": 0.423,
+        "gap": 0.017,
+        "rows_a": 109,
+        "rows_b": 227
+      },
+      {
+        "age": "80+",
+        "comorbidity": "4+",
+        "St. Brigid rate": 0.606,
+        "Lakeshore General rate": 0.554,
+        "gap": 0.052,
+        "rows_a": 71,
+        "rows_b": 148
+      }
+    ],
+    "weighted_mean_gap_within_strata": 0.054,
+    "raw_gap": 0.045,
+    "strata_where_a_is_higher": 9,
+    "strata_compared": 9
+  },
+  "E4_skew": {
+    "lives_alone_weight_with_harbor": 0.207,
+    "lives_alone_weight_without_harbor": 0.178,
+    "accuracy_with_harbor": {
+      "Lakeshore General": 0.715,
+      "St. Brigid": 0.685,
+      "Riverbend": 0.682,
+      "Pinecrest Rural": 0.693,
+      "Harbor Children's and Adults": 0.695
+    },
+    "accuracy_without_harbor_in_training": {
+      "Lakeshore General": 0.693,
+      "St. Brigid": 0.675,
+      "Riverbend": 0.632,
+      "Pinecrest Rural": 0.693,
+      "Harbor Children's and Adults": 0.64
+    }
+  },
+  "E5_personalization": {
+    "local_finetune_epochs": 3,
+    "per_member": {
+      "Lakeshore General": {
+        "local_only": 0.723,
+        "fedavg": 0.715,
+        "fedavg_finetuned": 0.725,
+        "centralized": 0.708,
+        "finetune_gain_over_fedavg": 0.01,
+        "fedavg_gain_over_local": -0.008
+      },
+      "St. Brigid": {
+        "local_only": 0.738,
+        "fedavg": 0.685,
+        "fedavg_finetuned": 0.725,
+        "centralized": 0.72,
+        "finetune_gain_over_fedavg": 0.04,
+        "fedavg_gain_over_local": -0.053
+      },
+      "Riverbend": {
+        "local_only": 0.693,
+        "fedavg": 0.682,
+        "fedavg_finetuned": 0.69,
+        "centralized": 0.695,
+        "finetune_gain_over_fedavg": 0.008,
+        "fedavg_gain_over_local": -0.011
+      },
+      "Pinecrest Rural": {
+        "local_only": 0.662,
+        "fedavg": 0.693,
+        "fedavg_finetuned": 0.69,
+        "centralized": 0.735,
+        "finetune_gain_over_fedavg": -0.003,
+        "fedavg_gain_over_local": 0.031
+      },
+      "Harbor Children's and Adults": {
+        "local_only": 0.708,
+        "fedavg": 0.695,
+        "fedavg_finetuned": 0.725,
+        "centralized": 0.695,
+        "finetune_gain_over_fedavg": 0.03,
+        "fedavg_gain_over_local": -0.013
+      }
+    }
+  },
+  "E6_privacy": [
+    {
+      "setting": "no privacy control (plain FedAvg)",
+      "secure_aggregation": false,
+      "dp_noise_multiplier": 0.0,
+      "global_accuracy": 0.7125,
+      "per_member": {
+        "Lakeshore General": 0.715,
+        "St. Brigid": 0.723,
+        "Riverbend": 0.693,
+        "Pinecrest Rural": 0.735,
+        "Harbor Children's and Adults": 0.698
+      },
+      "gap": 0.042,
+      "would_pass_accuracy_checks": true,
+      "cost_vs_no_privacy": {
+        "Lakeshore General": 0.0,
+        "St. Brigid": 0.0,
+        "Riverbend": 0.0,
+        "Pinecrest Rural": 0.0,
+        "Harbor Children's and Adults": 0.0
+      },
+      "global_cost": 0.0
+    },
+    {
+      "setting": "secure aggregation, no DP",
+      "secure_aggregation": true,
+      "dp_noise_multiplier": 0.0,
+      "global_accuracy": 0.7125,
+      "per_member": {
+        "Lakeshore General": 0.713,
+        "St. Brigid": 0.72,
+        "Riverbend": 0.693,
+        "Pinecrest Rural": 0.738,
+        "Harbor Children's and Adults": 0.7
+      },
+      "gap": 0.045,
+      "would_pass_accuracy_checks": true,
+      "cost_vs_no_privacy": {
+        "Lakeshore General": -0.002,
+        "St. Brigid": -0.003,
+        "Riverbend": 0.0,
+        "Pinecrest Rural": 0.003,
+        "Harbor Children's and Adults": 0.002
+      },
+      "global_cost": 0.0
+    },
+    {
+      "setting": "secure aggregation + DP 0.3 (charter)",
+      "secure_aggregation": true,
+      "dp_noise_multiplier": 0.3,
+      "global_accuracy": 0.694,
+      "per_member": {
+        "Lakeshore General": 0.715,
+        "St. Brigid": 0.685,
+        "Riverbend": 0.682,
+        "Pinecrest Rural": 0.693,
+        "Harbor Children's and Adults": 0.695
+      },
+      "gap": 0.033,
+      "would_pass_accuracy_checks": true,
+      "cost_vs_no_privacy": {
+        "Lakeshore General": 0.0,
+        "St. Brigid": -0.038,
+        "Riverbend": -0.011,
+        "Pinecrest Rural": -0.042,
+        "Harbor Children's and Adults": -0.003
+      },
+      "global_cost": -0.0185
+    },
+    {
+      "setting": "secure aggregation + DP 1.0",
+      "secure_aggregation": true,
+      "dp_noise_multiplier": 1.0,
+      "global_accuracy": 0.6315,
+      "per_member": {
+        "Lakeshore General": 0.65,
+        "St. Brigid": 0.645,
+        "Riverbend": 0.593,
+        "Pinecrest Rural": 0.62,
+        "Harbor Children's and Adults": 0.65
+      },
+      "gap": 0.057,
+      "would_pass_accuracy_checks": false,
+      "cost_vs_no_privacy": {
+        "Lakeshore General": -0.065,
+        "St. Brigid": -0.078,
+        "Riverbend": -0.1,
+        "Pinecrest Rural": -0.115,
+        "Harbor Children's and Adults": -0.048
+      },
+      "global_cost": -0.081
+    },
+    {
+      "setting": "secure aggregation + DP 2.0",
+      "secure_aggregation": true,
+      "dp_noise_multiplier": 2.0,
+      "global_accuracy": 0.5825,
+      "per_member": {
+        "Lakeshore General": 0.59,
+        "St. Brigid": 0.598,
+        "Riverbend": 0.562,
+        "Pinecrest Rural": 0.57,
+        "Harbor Children's and Adults": 0.593
+      },
+      "gap": 0.036,
+      "would_pass_accuracy_checks": false,
+      "cost_vs_no_privacy": {
+        "Lakeshore General": -0.125,
+        "St. Brigid": -0.125,
+        "Riverbend": -0.131,
+        "Pinecrest Rural": -0.165,
+        "Harbor Children's and Adults": -0.105
+      },
+      "global_cost": -0.13
+    }
+  ]
+}
