@@ -1,6 +1,10 @@
 {
   "policy_name": "Lakeshore Readmission Consortium Charter",
-  "policy_version": "1.0",
+  "policy_version": "1.1",
+  "change_log": [
+    "1.0 template defaults",
+    "1.1 floors set from our baselines (min_member_accuracy 0.66 = the best a member gets alone at its weakest, Pinecrest local-only 0.662; gap 0.08 = about twice the plain FedAvg gap 0.042); personalization clause added after experiment E5 showed Harbor's reversed lives_alone effect (docs/model_card.md); DP 0.3 kept because DP 1.0 fails the member floor (E6)"
+  ],
   "coordinator": "Lakeshore General Health IT (rotates annually under the charter)",
   "approved_by": "Consortium Steering Committee (one seat per member, one patient representative)",
   "evaluation_set": "neutral_eval.csv: 400 consented, de-identified rows from each member's population, tagged by member, held by the coordinator for evaluation only",
@@ -17,7 +21,13 @@
   "dp_noise_multiplier": 0.3,
 
   "min_global_accuracy": 0.68,
-  "min_member_accuracy": 0.62,
-  "max_member_accuracy_gap": 0.12,
-  "high_risk_threshold": 0.5
+  "min_member_accuracy": 0.66,
+  "max_member_accuracy_gap": 0.08,
+  "high_risk_threshold": 0.5,
+
+  "personalization": {
+    "local_finetune_epochs": 3,
+    "adopt_when_finetune_gain_at_least": 0.02,
+    "why": "Harbor pairs patients who live alone with a visiting nurse, so lives_alone lowers risk there and raises it everywhere else. One shared weight cannot fit both. A member may fine-tune the shared model on its own rows for 3 epochs and use that version for its own patients when it beats the shared model on its neutral slice by 0.02 or more. Fine-tuning happens inside the member; no rows move."
+  }
 }

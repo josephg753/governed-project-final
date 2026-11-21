@@ -116,7 +116,7 @@ def print_gate(report):
     print(line)
 
 
-def export_model(world, policy, theta, history, report):
+def export_model(world, policy, theta, history, report, baselines=None, personalized=None):
     """The predictive specialist's tool: weights plus the card facts, never a row."""
     last = history[-1]
     schema = world.schema
@@ -133,6 +133,8 @@ def export_model(world, policy, theta, history, report):
         "weights": [round(float(w), 6) for w in theta[:-1]], "bias": round(float(theta[-1]), 6),
         "threshold_high_risk": policy.get("high_risk_threshold", 0.5),
         "intended_use": schema["intended_use"], "prohibited_uses": schema["prohibited_uses"],
+        "member_baselines": baselines or {},
+        "personalization": {**policy.get("personalization", {}), "adopted_by": personalized or []},
     }
     (ROOT / "models").mkdir(exist_ok=True)
     path = ROOT / "models" / "federated_model.json"
@@ -189,20 +191,41 @@ def main():
     audit.write_json(report, "federation_gate_report.json")
     print_gate(report)
 
+    # Baselines and personalization are always computed (the predictive specialist reads them from the model file);
+    # --baselines prints the table.
+    from fl import model as M
+    import numpy as np
+    loc = F.local_only(world)
+    cen = F.centralized(world)
+    pers = policy.get("personalization", {})
+    ft_ep = pers.get("local_finetune_epochs", 0)
+    adopt_at = pers.get("adopt_when_finetune_gain_at_least", None)
+    baselines = {}
+    for k, c in enumerate(world.clients):
+        Xt, yt = world.test_for(k)
+        row = {"local_only": M.accuracy(loc[c.name], Xt, yt), "fedavg": M.accuracy(theta, Xt, yt), "centralized": M.accuracy(cen, Xt, yt)}
+        if ft_ep:
+            # fine-tuning runs inside the member, on its own rows; only the resulting accuracy is reported
+            ft = M.local_train(theta, c.X_train, c.y_train, ft_ep, 64, 0.1, rng=np.random.default_rng(cfg.seed))
+            row["fedavg_finetuned"] = M.accuracy(ft, Xt, yt)
+        baselines[c.name] = {key: round(float(v), 3) for key, v in row.items()}
+    personalized = [m for m, b in baselines.items()
+                    if ft_ep and adopt_at is not None and b["fedavg_finetuned"] - b["fedavg"] >= adopt_at]
     if a.baselines:
         print("\n[stage 4b] Baselines per member (accuracy on the neutral evaluation set)")
-        from fl import model as M
-        loc = F.local_only(world)
-        cen = F.centralized(world)
-        print(f"  {'member':<28} {'local only':>10} {'FedAvg':>10} {'centralized':>12} {'gain':>8}")
-        for k, c in enumerate(world.clients):
-            Xt, yt = world.test_for(k)
-            la, fa, ca = M.accuracy(loc[c.name], Xt, yt), M.accuracy(theta, Xt, yt), M.accuracy(cen, Xt, yt)
-            print(f"  {c.name:<28} {la:>10.3f} {fa:>10.3f} {ca:>12.3f} {fa - la:>+8.3f}")
+        ft_head = f" {'fine-tuned':>11}" if ft_ep else ""
+        print(f"  {'member':<28} {'local only':>10} {'FedAvg':>10} {'centralized':>12} {'gain':>8}{ft_head}")
+        for c in world.clients:
+            b = baselines[c.name]
+            ft_col = f" {b['fedavg_finetuned']:>11.3f}" if ft_ep else ""
+            print(f"  {c.name:<28} {b['local_only']:>10.3f} {b['fedavg']:>10.3f} {b['centralized']:>12.3f} {b['fedavg'] - b['local_only']:>+8.3f}{ft_col}")
         print(f"  {'overall':<28} {'':>10} {M.accuracy(theta, world.X_test, world.y_test):>10.3f} {M.accuracy(cen, world.X_test, world.y_test):>12.3f}")
+        if ft_ep:
+            print(f"  personalization clause: fine-tune {ft_ep} local epochs; adopt when the gain is at least {adopt_at}: "
+                  f"{', '.join(personalized) or 'no member qualifies'}")
 
     print("\n[stage 5] Evidence")
-    export_model(world, policy, theta, history, report)
+    export_model(world, policy, theta, history, report, baselines, personalized)
     card = audit.model_card(policy, cfg, history, report, world, run_info)
     print(f"  {log_path.relative_to(ROOT)}  ({len(history)} round entries appended)")
     print(f"  {card.relative_to(ROOT)}")
